@@ -122,7 +122,7 @@ def play(strategy0, strategy1, goal=GOAL_SCORE):
     who = 0  # Which player is about to take a turn, 0 (first) or 1 (second)
     score, opponent_score = 0, 0
     "*** YOUR CODE HERE ***"
-    while score <= goal and opponent_score <= goal:
+    while score < goal and opponent_score < goal:
         # player 1's turn
         if who == 0:
             dice = select_dice(score, opponent_score)
@@ -334,39 +334,72 @@ def swap_strategy(score, opponent_score):
 def final_strategy(score, opponent_score):
     """Write a brief description of your final strategy.
 
-    *** If score is at a 20 point deficit
-        roll 8, as it has the highest average
-        if dice is four sided, roll 5
+    *** at the start of the game we want to roll fairly high dices to try and get a lead
+        if our opponent starts to get a lead on us we want to roll 5's to lower risk but hopefully catch up
 
-        If our score is above a certain threshhold,
-        Roll low amounts of dice
+        if opponent_score is at least greater than double our score
+        we want to apply swap strategy to hopefully swap
 
-        If we are in a deficit compared to our opponent
-        try swap strategy***
+        when our score is fairly high, say, greater than 60 and apply bacon strategy, 
+        except the higher our score the less BASELINE_NUM_ROLLS
+
+        do some checks if we are in a great score deficit, apply swap strategy to
+        help get us out of it
+
+        the higher score we get, the less risky we want to approach ours rolls
+        # if we are in a lead by a multiple of 2
+        # need to watch out for swaps
+        # attempt fair sized rolls
+        # decrease as we have a higher score
+
+    ***
     """
     "*** YOUR CODE HERE ***"
     dice = select_dice(score, opponent_score)
-    #
-    if opponent_score > score and dice == six_sided:
-        return 8
-    elif score > opponent_score and dice == four_sided:
-        return 4
-    elif score > 90 and opponent_score < 60:
-        return free_bacon(opponent_score)
-    elif score > 80 and opponent_score < 70:
-        return bacon_strategy(score, opponent_score)
-    elif score < 50:
-        return 8
-    elif score < 10:
-        return 3
-    elif opponent_score > 50 and score < 30:
-        return swap_strategy(score, opponent_score)
-    elif dice == four_sided:
-        return 4
-    else:
-        return 8
-    
 
+    if score < 10 and opponent_score < 10:
+        return 6 
+    elif score < 20 and opponent_score > score and opponent_score >= 40:
+        if opponent_score > (score * 2):
+            return swap_strategy(score, opponent_score)
+        if opponent_score > (score * 2) and dice == four_sided:
+            return bacon_strategy(score, opponent_score)
+        if dice == four_sided:
+            return swap_strategy(score, opponent_score)
+        return 8 
+    elif opponent_score > (score * 2):
+        return swap_strategy(score, opponent_score)
+    elif score > 60: 
+        if score > 70:
+            if score > 80:
+                if score > 90:
+                    if bacon_strategy(score, opponent_score) == 5:
+                        return 3 
+                    else:
+                        return 0
+            if bacon_strategy(score, opponent_score) == 5:
+                return 4 
+            else:
+                return 0 
+        if bacon_strategy(score, opponent_score) == 5 and dice == six_sided:
+            return 8 
+        else:
+            return 0
+    elif score > (opponent_score * 2):
+        if score >= 50:
+            if score > 60:
+                if score > 70:
+                    return 4
+                return 5
+            return 6 
+        elif score < 50:
+            return 8 
+    elif dice == four_sided and score > opponent_score:
+        return bacon_strategy(score, opponent_score)
+    elif dice == four_sided and score < opponent_score:
+        return swap_strategy(score, opponent_score)
+    else:
+        return 8 
 
 
 ##########################
